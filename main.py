@@ -1,21 +1,16 @@
-"""
-PACE — Premium Running App
-Backend API (FastAPI)
-"""
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import os
 
-# Import langsung karena struktur flat
-from auth import router as auth_router
-from users import router as users_router
-from activities import router as activities_router
-from analytics import router as analytics_router
-from training_plan import router as training_plan_router
-from community import router as community_router
-from ai_coach import router as ai_coach_router
-from devices import router as devices_router
+from app.routers.auth import router as auth_router
+from app.routers.users import router as users_router
+from app.routers.activities import router as activities_router
+from app.routers.analytics import router as analytics_router
+from app.routers.training_plan import router as training_plan_router
+from app.routers.community import router as community_router
+from app.routers.ai_coach import router as ai_coach_router
+from app.routers.devices import router as devices_router
 
 app = FastAPI(
     title="PACE API",
@@ -25,7 +20,6 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# ── CORS ──────────────────────────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -34,7 +28,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── ROUTERS ───────────────────────────────────────────────────
 app.include_router(auth_router,          prefix="/api/v1/auth",          tags=["Auth"])
 app.include_router(users_router,         prefix="/api/v1/users",         tags=["Users"])
 app.include_router(activities_router,    prefix="/api/v1/activities",    tags=["Activities"])
@@ -44,7 +37,6 @@ app.include_router(community_router,     prefix="/api/v1/community",     tags=["
 app.include_router(ai_coach_router,      prefix="/api/v1/ai-coach",      tags=["AI Coach"])
 app.include_router(devices_router,       prefix="/api/v1/devices",       tags=["Devices"])
 
-# ── ROOT ENDPOINTS ────────────────────────────────────────────
 @app.get("/", tags=["Root"])
 async def root():
     return {"message": "PACE API is running 🏃", "version": "1.0.0"}
@@ -53,6 +45,5 @@ async def root():
 async def health_check():
     return {"status": "healthy"}
 
-# ── SERVE FRONTEND ───────────────────────────────
 if os.path.exists("index.html"):
     app.mount("/app", StaticFiles(directory=".", html=True), name="static")
