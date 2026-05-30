@@ -6,9 +6,10 @@ POST /api/v1/ai-coach/chat
 Chat uses the Anthropic Claude API.
 Set ANTHROPIC_API_KEY env var for real responses; falls back to mock if unset.
 """
+# Baris 9-11 ubah jadi:
 from fastapi import APIRouter, Query
-from app.schemas.pace_schemas import AIRecommendation, ChatRequest, ChatResponse
-from app.models.database import users_db, analytics_db, activities_db
+from pace_schemas import AIRecommendation, ChatRequest, ChatResponse
+from database import users_db, analytics_db, activities_db
 import os
 import httpx
 

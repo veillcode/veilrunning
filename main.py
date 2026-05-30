@@ -4,20 +4,18 @@ Backend API (FastAPI)
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 import os
 
-from app.routers import (
-    auth,
-    users,
-    activities,
-    analytics,
-    training_plan,
-    community,
-    ai_coach,
-    devices,
-)
+# Import langsung karena struktur flat
+from auth import router as auth_router
+from users import router as users_router
+from activities import router as activities_router
+from analytics import router as analytics_router
+from training_plan import router as training_plan_router
+from community import router as community_router
+from ai_coach import router as ai_coach_router
+from devices import router as devices_router
 
 app = FastAPI(
     title="PACE API",
@@ -37,14 +35,14 @@ app.add_middleware(
 )
 
 # ── ROUTERS ───────────────────────────────────────────────────
-app.include_router(auth.router,          prefix="/api/v1/auth",          tags=["Auth"])
-app.include_router(users.router,         prefix="/api/v1/users",         tags=["Users"])
-app.include_router(activities.router,    prefix="/api/v1/activities",    tags=["Activities"])
-app.include_router(analytics.router,     prefix="/api/v1/analytics",     tags=["Analytics"])
-app.include_router(training_plan.router, prefix="/api/v1/training-plan", tags=["Training Plan"])
-app.include_router(community.router,     prefix="/api/v1/community",     tags=["Community"])
-app.include_router(ai_coach.router,      prefix="/api/v1/ai-coach",      tags=["AI Coach"])
-app.include_router(devices.router,       prefix="/api/v1/devices",       tags=["Devices"])
+app.include_router(auth_router,          prefix="/api/v1/auth",          tags=["Auth"])
+app.include_router(users_router,         prefix="/api/v1/users",         tags=["Users"])
+app.include_router(activities_router,    prefix="/api/v1/activities",    tags=["Activities"])
+app.include_router(analytics_router,     prefix="/api/v1/analytics",     tags=["Analytics"])
+app.include_router(training_plan_router, prefix="/api/v1/training-plan", tags=["Training Plan"])
+app.include_router(community_router,     prefix="/api/v1/community",     tags=["Community"])
+app.include_router(ai_coach_router,      prefix="/api/v1/ai-coach",      tags=["AI Coach"])
+app.include_router(devices_router,       prefix="/api/v1/devices",       tags=["Devices"])
 
 # ── ROOT ENDPOINTS ────────────────────────────────────────────
 @app.get("/", tags=["Root"])
@@ -55,8 +53,6 @@ async def root():
 async def health_check():
     return {"status": "healthy"}
 
-# ── SERVE FRONTEND (index.html) ───────────────────────────────
-# Taruh index.html di folder yang sama dengan main.py
-# Lalu akses via http://localhost:8000/app/index.html
+# ── SERVE FRONTEND ───────────────────────────────
 if os.path.exists("index.html"):
     app.mount("/app", StaticFiles(directory=".", html=True), name="static")
