@@ -11,7 +11,6 @@ from app.routers.training_plan import router as training_plan_router
 from app.routers.community import router as community_router
 from app.routers.ai_coach import router as ai_coach_router
 from app.routers.devices import router as devices_router
-from app.routers.notifications import router as notifications_router
 
 app = FastAPI(
     title="PACE API",
@@ -37,7 +36,6 @@ app.include_router(training_plan_router, prefix="/api/v1/training-plan", tags=["
 app.include_router(community_router,     prefix="/api/v1/community",     tags=["Community"])
 app.include_router(ai_coach_router,      prefix="/api/v1/ai-coach",      tags=["AI Coach"])
 app.include_router(devices_router,       prefix="/api/v1/devices",       tags=["Devices"])
-app.include_router(notifications_router, prefix="/api/v1/notifications", tags=["Notifications"])
 
 @app.get("/", tags=["Root"])
 async def root():
