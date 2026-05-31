@@ -40,7 +40,7 @@ async def create_activity(
     act = ActivityDB(
         id=f"act_{uuid.uuid4().hex[:8]}", user_id=user_id,
         type=body.type, name=body.name,
-        date=datetime.now().strftime("%d %b %Y, %H:%M WIB"),
+        date=datetime.now(WIB).strftime("%d %b %Y, %H:%M"),
         distance_km=body.distance_km, duration_seconds=body.duration_seconds,
         avg_pace_sec_per_km=pace, avg_hr=body.avg_hr,
         calories=cal, elevation_m=body.elevation_m,
