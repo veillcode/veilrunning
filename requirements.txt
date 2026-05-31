@@ -1,8 +1,10 @@
-fastapi==0.136.3
-uvicorn[standard]==0.48.0
-starlette==1.2.0
-pydantic==2.13.4
+fastapi==0.115.5
+uvicorn[standard]==0.32.0
+starlette==0.41.2
+pydantic==2.10.3
 python-multipart==0.0.20
-
-# Tambahan penting
 httpx==0.28.1
+sqlalchemy==2.0.36
+psycopg2-binary==2.9.10
+alembic==1.14.0
+python-dotenv==1.0.1

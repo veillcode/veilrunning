@@ -1,3 +1,4 @@
+# main.py - versi dengan database
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -11,6 +12,7 @@ from app.routers.training_plan import router as training_plan_router
 from app.routers.community import router as community_router
 from app.routers.ai_coach import router as ai_coach_router
 from app.routers.devices import router as devices_router
+from app.models.database_setup import init_db
 
 app = FastAPI(
     title="PACE API",
@@ -27,6 +29,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.on_event("startup")
+async def startup():
+    init_db()
 
 app.include_router(auth_router,          prefix="/api/v1/auth",          tags=["Auth"])
 app.include_router(users_router,         prefix="/api/v1/users",         tags=["Users"])

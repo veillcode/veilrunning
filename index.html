@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#F7F6F3">
 <title>PACE — Premium Running</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -20,34 +24,101 @@
   --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
   --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
   --shadow-orange: 0 8px 24px rgba(244,83,28,0.28);
-  --nav-h: 72px; --radius-sm: 10px; --radius-md: 16px; --radius-lg: 22px; --radius-xl: 28px;
+  --nav-h: 70px; --nav-total: calc(64px + env(safe-area-inset-bottom, 20px));
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
 }
-html, body { width: 100%; height: 100%; font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif; background: #1A1917; overflow: hidden; -webkit-font-smoothing: antialiased; }
-#app-shell { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: #1A1917; }
-#phone { width: 393px; height: 852px; background: var(--bg); border-radius: 52px; overflow: hidden; position: relative; box-shadow: 0 50px 120px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.08); }
-.status-bar { position: absolute; top: 0; left: 0; right: 0; z-index: 100; height: 50px; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 28px 8px; pointer-events: none; }
-.status-bar .time { font-size: 15px; font-weight: 600; letter-spacing: -0.3px; color: var(--text-primary); }
-.status-icons { display: flex; align-items: center; gap: 6px; }
-.loading-overlay { position: absolute; inset: 0; z-index: 500; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; transition: opacity 0.4s ease; }
+
+html, body {
+  width: 100%; height: 100%;
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+#app-shell {
+  position: fixed; inset: 0;
+  background: var(--bg);
+  display: flex; flex-direction: column;
+}
+
+.status-bar {
+  display: none;
+}
+
+.loading-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: var(--bg);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+  transition: opacity 0.4s ease;
+}
 .loading-overlay.hidden { opacity: 0; pointer-events: none; }
 .loading-spinner { width: 40px; height: 40px; border-radius: 50%; border: 3px solid var(--surface-3); border-top-color: var(--orange); animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .loading-text { font-size: 13px; color: var(--text-tertiary); font-weight: 500; }
-.toast { position: absolute; bottom: calc(var(--nav-h) + 16px); left: 16px; right: 16px; z-index: 400; background: var(--text-primary); color: white; border-radius: var(--radius-md); padding: 12px 16px; font-size: 13px; font-weight: 500; transform: translateY(20px); opacity: 0; transition: all 0.3s cubic-bezier(0.4,0,0.2,1); pointer-events: none; }
+
+.toast {
+  position: fixed;
+  bottom: calc(var(--nav-h) + var(--safe-bottom) + 16px);
+  left: 16px; right: 16px; z-index: 400;
+  background: var(--text-primary); color: white;
+  border-radius: var(--radius-md); padding: 12px 16px;
+  font-size: 13px; font-weight: 500;
+  transform: translateY(20px); opacity: 0;
+  transition: all 0.3s cubic-bezier(0.4,0,0.2,1); pointer-events: none;
+}
 .toast.show { transform: translateY(0); opacity: 1; }
 .toast.error { background: var(--red); }
 .toast.success { background: var(--green); }
-.screen { position: absolute; inset: 0; background: var(--bg); overflow-y: auto; overflow-x: hidden; padding-top: 50px; padding-bottom: calc(var(--nav-h) + 8px); opacity: 0; pointer-events: none; transform: translateX(24px); transition: opacity 0.32s cubic-bezier(0.4,0,0.2,1), transform 0.32s cubic-bezier(0.4,0,0.2,1); -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+
+.screen {
+  position: absolute; inset: 0;
+  background: var(--bg);
+  overflow-y: auto; overflow-x: hidden;
+  padding-top: calc(var(--safe-top) + 16px);
+  padding-bottom: calc(var(--nav-h) + var(--safe-bottom) + 8px);
+  opacity: 0; pointer-events: none;
+  transform: translateX(24px);
+  transition: opacity 0.32s cubic-bezier(0.4,0,0.2,1), transform 0.32s cubic-bezier(0.4,0,0.2,1);
+  -webkit-overflow-scrolling: touch; scrollbar-width: none;
+}
 .screen::-webkit-scrollbar { display: none; }
 .screen.active { opacity: 1; pointer-events: all; transform: none; }
-#bottom-nav { position: absolute; bottom: 0; left: 0; right: 0; z-index: 200; height: var(--nav-h); background: rgba(247,246,243,0.92); backdrop-filter: blur(20px) saturate(1.8); border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-around; padding: 0 8px 10px; }
-.nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 0; cursor: pointer; transition: all 0.2s ease; border: none; background: none; outline: none; }
-.nav-item .nav-icon { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; border-radius: 8px; transition: all 0.22s cubic-bezier(0.4,0,0.2,1); }
+
+#bottom-nav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 9999;
+  height: 70px;
+  background: #FFFFFF;
+  border-top: 2px solid #E0DDD8;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 4px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.nav-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 6px 0; cursor: pointer;
+  transition: all 0.2s ease; border: none; background: none; outline: none;
+  min-height: 48px;
+}
+.nav-item .nav-icon {
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 8px;
+  transition: all 0.22s cubic-bezier(0.4,0,0.2,1);
+}
 .nav-item .nav-label { font-size: 10px; font-weight: 500; color: var(--text-tertiary); transition: color 0.2s; }
 .nav-item.active .nav-icon { background: var(--orange-glow); }
 .nav-item.active .nav-icon svg { color: var(--orange) !important; }
 .nav-item.active .nav-label { color: var(--orange); font-weight: 600; }
 .nav-item svg { color: var(--text-tertiary); transition: color 0.2s; }
+
 .section-title { font-size: 17px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.3px; }
 .section-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 22px 10px; }
 .view-all { font-size: 12px; font-weight: 500; color: var(--orange); cursor: pointer; }
@@ -125,7 +196,6 @@ html, body { width: 100%; height: 100%; font-family: 'DM Sans', -apple-system, B
 .ai-reco-desc { font-size: 12px; color: rgba(255,255,255,0.45); margin-top: 8px; line-height: 1.5; }
 .ai-btn { width: 100%; margin-top: 12px; background: var(--orange); color: white; border: none; border-radius: 12px; padding: 13px; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: var(--shadow-orange); transition: all 0.2s; }
 .ai-btn:active { transform: scale(0.98); }
-/* RUN */
 .run-screen { background: #FAFAF8; }
 .run-header { padding: 14px 22px; display: flex; align-items: center; justify-content: space-between; }
 .run-status { display: flex; align-items: center; gap: 7px; }
@@ -136,20 +206,15 @@ html, body { width: 100%; height: 100%; font-family: 'DM Sans', -apple-system, B
 .run-gps { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-tertiary); }
 .pace-hero { text-align: center; padding: 8px 22px 0; }
 .pace-label { font-size: 11px; font-weight: 600; letter-spacing: 0.7px; color: var(--text-tertiary); text-transform: uppercase; }
-.pace-value { font-size: 76px; font-weight: 800; color: var(--text-primary); letter-spacing: -4px; line-height: 1; font-variant-numeric: tabular-nums; font-family: 'DM Mono', monospace; }
+.pace-value { font-size: 72px; font-weight: 800; color: var(--text-primary); letter-spacing: -4px; line-height: 1; font-variant-numeric: tabular-nums; font-family: 'DM Mono', monospace; }
 .pace-unit { font-size: 18px; font-weight: 500; color: var(--text-secondary); margin-top: -4px; }
 .run-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 14px 16px 0; }
 .run-stat { background: var(--surface); border-radius: var(--radius-md); border: 1px solid var(--border); box-shadow: var(--shadow-sm); padding: 14px 16px; }
 .run-stat-lbl { font-size: 10px; font-weight: 500; color: var(--text-tertiary); letter-spacing: 0.3px; text-transform: uppercase; }
-.run-stat-val { font-size: 26px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.8px; margin-top: 2px; font-variant-numeric: tabular-nums; font-family: 'DM Mono', monospace; }
+.run-stat-val { font-size: 24px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.8px; margin-top: 2px; font-variant-numeric: tabular-nums; font-family: 'DM Mono', monospace; }
 .run-stat-unit { font-size: 12px; font-weight: 400; color: var(--text-secondary); margin-left: 2px; font-family: 'DM Sans', sans-serif; }
-.map-container { margin: 14px 16px 0; height: 160px; border-radius: var(--radius-xl); background: #E8E6E0; overflow: hidden; position: relative; border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
-.map-svg { width: 100%; height: 100%; }
-.map-pin { position: absolute; width: 14px; height: 14px; border-radius: 50%; background: var(--orange); border: 3px solid white; box-shadow: 0 2px 8px rgba(244,83,28,0.5); transition: left 0.9s ease, bottom 0.9s ease; }
-.map-pin.live { animation: map-pulse 2s infinite; }
-@keyframes map-pulse { 0%,100%{box-shadow:0 2px 8px rgba(244,83,28,0.5),0 0 0 0 rgba(244,83,28,0.3)} 50%{box-shadow:0 2px 8px rgba(244,83,28,0.5),0 0 0 8px rgba(244,83,28,0)} }
-.run-controls { display: flex; align-items: center; justify-content: center; gap: 20px; padding: 20px 16px; }
-.ctrl-btn { display: flex; flex-direction: column; align-items: center; gap: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 14px 20px; cursor: pointer; box-shadow: var(--shadow-sm); font-size: 12px; font-weight: 500; color: var(--text-secondary); transition: all 0.2s; }
+.run-controls { display: flex; align-items: center; justify-content: center; gap: 20px; padding: 16px 16px; }
+.ctrl-btn { display: flex; flex-direction: column; align-items: center; gap: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 14px 24px; cursor: pointer; box-shadow: var(--shadow-sm); font-size: 12px; font-weight: 500; color: var(--text-secondary); transition: all 0.2s; }
 .ctrl-btn:active { transform: scale(0.96); }
 .pause-btn { width: 76px; height: 76px; border-radius: 50%; background: var(--orange); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: var(--shadow-orange); transition: all 0.2s; flex-shrink: 0; }
 .pause-btn:active { transform: scale(0.94); }
@@ -158,14 +223,13 @@ html, body { width: 100%; height: 100%; font-family: 'DM Sans', -apple-system, B
 .lap-num { font-weight: 600; color: var(--text-secondary); }
 .lap-dist { color: var(--text-tertiary); }
 .lap-pace { font-weight: 700; color: var(--text-primary); font-family: 'DM Mono', monospace; }
-/* ANALYTICS */
 .analytics-tabs { display: flex; padding: 12px 16px 0; gap: 6px; }
 .a-tab { padding: 7px 14px; border-radius: 20px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--text-secondary); transition: all 0.2s; }
 .a-tab.active { background: var(--orange); border-color: var(--orange); color: white; font-weight: 600; }
 .stats-hero { display: flex; gap: 10px; padding: 14px 16px 0; }
 .stat-hero-card { flex: 1; background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: var(--shadow-sm); padding: 16px; }
 .shc-label { font-size: 10px; font-weight: 500; color: var(--text-tertiary); letter-spacing: 0.3px; text-transform: uppercase; margin-bottom: 6px; }
-.shc-value { font-size: 24px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.7px; }
+.shc-value { font-size: 20px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.7px; }
 .shc-unit { font-size: 11px; color: var(--text-secondary); }
 .shc-change { font-size: 11px; margin-top: 4px; }
 .shc-up { color: var(--green); }
@@ -188,7 +252,6 @@ html, body { width: 100%; height: 100%; font-family: 'DM Sans', -apple-system, B
 .vo2-label { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.7); letter-spacing: 0.4px; text-transform: uppercase; }
 .vo2-desc { font-size: 20px; font-weight: 700; color: white; margin-top: 2px; }
 .vo2-sub { font-size: 12px; color: rgba(255,255,255,0.65); margin-top: 3px; }
-/* AI CHAT */
 .chat-screen { background: #FAFAF8; }
 .chat-messages { padding: 10px 16px; display: flex; flex-direction: column; gap: 12px; min-height: 200px; }
 .chat-msg { max-width: 82%; }
@@ -213,7 +276,6 @@ html, body { width: 100%; height: 100%; font-family: 'DM Sans', -apple-system, B
 .suggested-prompts { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px 12px; }
 .suggestion-chip { padding: 6px 12px; border-radius: 20px; background: var(--surface); border: 1px solid var(--border); font-size: 12px; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; white-space: nowrap; }
 .suggestion-chip:active { background: var(--orange-pale); border-color: var(--orange); color: var(--orange); }
-/* COMMUNITY */
 .comm-tabs { display: flex; padding: 10px 16px 0; gap: 4px; border-bottom: 1px solid var(--border); }
 .c-tab { padding: 8px 16px; font-size: 14px; font-weight: 500; color: var(--text-tertiary); cursor: pointer; border: none; background: none; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.2s; }
 .c-tab.active { color: var(--text-primary); font-weight: 600; border-bottom-color: var(--orange); }
@@ -236,7 +298,6 @@ html, body { width: 100%; height: 100%; font-family: 'DM Sans', -apple-system, B
 .feed-action svg { color: var(--text-tertiary); }
 .feed-action.liked svg { color: var(--red); }
 .feed-action.liked .feed-action-count { color: var(--red); }
-/* PROFILE */
 .profile-hero { background: var(--surface); margin: 12px 16px 0; border-radius: var(--radius-xl); border: 1px solid var(--border); box-shadow: var(--shadow-sm); padding: 22px; text-align: center; }
 .profile-avatar-big { width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 12px; background: linear-gradient(135deg, #FF6B35 0%, #F4531C 100%); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 800; color: white; border: 3px solid var(--surface); box-shadow: var(--shadow-md); }
 .profile-name { font-size: 22px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.5px; }
@@ -263,7 +324,6 @@ html, body { width: 100%; height: 100%; font-family: 'DM Sans', -apple-system, B
 .badge-item { flex: 1; background: var(--surface); border-radius: var(--radius-md); border: 1px solid var(--border); padding: 14px 10px; text-align: center; box-shadow: var(--shadow-sm); }
 .badge-icon { font-size: 28px; margin-bottom: 4px; }
 .badge-name { font-size: 10px; font-weight: 600; color: var(--text-secondary); }
-/* SETTINGS */
 .settings-section-title { font-size: 11px; font-weight: 600; letter-spacing: 0.7px; text-transform: uppercase; color: var(--text-tertiary); padding: 20px 22px 8px; }
 .settings-group { margin: 0 16px; background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: var(--shadow-sm); overflow: hidden; }
 .settings-group + .settings-group { margin-top: 8px; }
@@ -288,25 +348,12 @@ html, body { width: 100%; height: 100%; font-family: 'DM Sans', -apple-system, B
 .delay-3 { animation-delay: 0.15s; }
 .delay-4 { animation-delay: 0.2s; }
 .delay-5 { animation-delay: 0.25s; }
-.notch-pill { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 126px; height: 37px; z-index: 301; }
 .spacer-bottom { height: 16px; }
 .empty-state { text-align: center; padding: 32px 20px; color: var(--text-tertiary); font-size: 13px; }
-.pulse-ring { animation: pulse-green 1.5s infinite; }
 </style>
 </head>
 <body>
 <div id="app-shell">
-<div id="phone">
-  <div class="notch-pill">
-    <svg viewBox="0 0 126 37" fill="none"><path d="M0 0 Q63 0 126 0 L126 8 Q126 37 103 37 L23 37 Q0 37 0 8 Z" fill="#0F0E0C"/></svg>
-  </div>
-  <div class="status-bar">
-    <div class="time" id="clock">9:41</div>
-    <div class="status-icons">
-      <svg width="16" height="12" viewBox="0 0 16 12" fill="none" color="var(--text-primary)"><rect x="0" y="4" width="3" height="8" rx="1" fill="currentColor" opacity="0.3"/><rect x="4" y="2.5" width="3" height="9.5" rx="1" fill="currentColor" opacity="0.5"/><rect x="8" y="1" width="3" height="11" rx="1" fill="currentColor" opacity="0.7"/><rect x="12" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg>
-      <svg width="25" height="12" viewBox="0 0 25 12" fill="none" color="var(--text-primary)"><rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="currentColor" stroke-opacity="0.35"/><rect x="2" y="2" width="16" height="8" rx="2" fill="currentColor"/></svg>
-    </div>
-  </div>
   <div class="loading-overlay" id="loading-overlay">
     <div class="loading-spinner"></div>
     <div class="loading-text">Loading PACE...</div>
@@ -380,8 +427,7 @@ html, body { width: 100%; height: 100%; font-family: 'DM Sans', -apple-system, B
     <div class="spacer-bottom"></div>
   </div>
 
-
-  <!-- LIVE RUN (GPS BENERAN) -->
+  <!-- LIVE RUN -->
   <div class="screen run-screen" id="screen-run">
     <div class="run-header animate-in">
       <div class="run-status">
@@ -404,8 +450,7 @@ html, body { width: 100%; height: 100%; font-family: 'DM Sans', -apple-system, B
       <div class="run-stat"><div class="run-stat-lbl">Avg Pace</div><div class="run-stat-val" id="live-avg-pace">--'--"<span class="run-stat-unit">/km</span></div></div>
       <div class="run-stat"><div class="run-stat-lbl">Calories</div><div class="run-stat-val" id="live-cal">0<span class="run-stat-unit">kcal</span></div></div>
     </div>
-    <!-- LEAFLET MAP -->
-    <div class="map-container animate-in delay-3" id="leaflet-map-wrap" style="height:180px;border-radius:22px;overflow:hidden;margin:14px 16px 0;position:relative;border:1px solid var(--border);box-shadow:var(--shadow-sm);">
+    <div id="leaflet-map-wrap" style="height:160px;border-radius:22px;overflow:hidden;margin:14px 16px 0;position:relative;border:1px solid var(--border);box-shadow:var(--shadow-sm);">
       <div id="leaflet-map" style="width:100%;height:100%;"></div>
       <div id="gps-waiting" style="position:absolute;inset:0;background:rgba(247,246,243,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;z-index:500;border-radius:22px;">
         <div style="width:36px;height:36px;border-radius:50%;border:3px solid var(--surface-3);border-top-color:var(--orange);animation:spin 0.8s linear infinite;"></div>
@@ -429,7 +474,6 @@ html, body { width: 100%; height: 100%; font-family: 'DM Sans', -apple-system, B
     <div class="laps-list" id="laps-list"></div>
     <div class="spacer-bottom"></div>
   </div>
-
 
   <!-- ANALYTICS -->
   <div class="screen" id="screen-analytics">
@@ -577,795 +621,320 @@ html, body { width: 100%; height: 100%; font-family: 'DM Sans', -apple-system, B
 
   <!-- BOTTOM NAV -->
   <nav id="bottom-nav">
-    <button class="nav-item active" data-screen="home" onclick="switchScreen('home')"><div class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><span class="nav-label">Home</span></button>
-    <button class="nav-item" data-screen="run" onclick="switchScreen('run')"><div class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="4" r="2"/><path d="M15.89 8.11C15.5 7.08 14.5 6 13 6h-2c-1.1 0-1.99.9-1.99 2v6H11v6h2v-6h1.5l1.5-4.5"/><path d="M6.5 15.5L5 19"/></svg></div><span class="nav-label">Activity</span></button>
-    <button class="nav-item" data-screen="analytics" onclick="switchScreen('analytics')"><div class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><span class="nav-label">Stats</span></button>
-    <button class="nav-item" data-screen="community" onclick="switchScreen('community')"><div class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><span class="nav-label">Community</span></button>
-    <button class="nav-item" data-screen="aichat" onclick="switchScreen('aichat')"><div class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><span class="nav-label">Coach</span></button>
+    <button class="nav-item active" data-screen="home" onclick="switchScreen('home')"><div class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><span class="nav-label">Home</span></button>
+    <button class="nav-item" data-screen="run" onclick="switchScreen('run')"><div class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="4" r="2"/><path d="M15.89 8.11C15.5 7.08 14.5 6 13 6h-2c-1.1 0-1.99.9-1.99 2v6H11v6h2v-6h1.5l1.5-4.5"/><path d="M6.5 15.5L5 19"/></svg></div><span class="nav-label">Activity</span></button>
+    <button class="nav-item" data-screen="analytics" onclick="switchScreen('analytics')"><div class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><span class="nav-label">Stats</span></button>
+    <button class="nav-item" data-screen="community" onclick="switchScreen('community')"><div class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><span class="nav-label">Community</span></button>
+    <button class="nav-item" data-screen="aichat" onclick="switchScreen('aichat')"><div class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><span class="nav-label">Coach</span></button>
   </nav>
-</div></div>
+</div>
 
 <script>
-// ═══════════════════════════════════════════════
-// CONFIG
-// ═══════════════════════════════════════════════
 const API_BASE = 'https://veilrunning-production.up.railway.app/api/v1';
-
-// ═══════════════════════════════════════════════
-// MOCK DATABASE
-// ═══════════════════════════════════════════════
 const DB = {
-  user: {
-    id: "user_alex", name: "Alex Morgan", email: "alex@pace.run",
-    location: "London, UK 🇬🇧", fitness_score: 82, fatigue_score: 54,
-    form_status: "Good", vo2_max: 52, weekly_goal_km: 70,
-    total_activities: 47, followers: 213, following: 89
-  },
-  weeklyProgress: {
-    total_km: 48.7, goal_km: 70, change_pct: 12,
-    days: [8.2, 5.6, 10.1, 4.1, 7.2, 2.1, 0]
-  },
-  todayPlan: { name: "Easy Run", distance_km: 8, zone: 2, duration_min: 42 },
+  user: { id:"user_alex",name:"Alex Morgan",email:"alex@pace.run",location:"London, UK 🇬🇧",fitness_score:82,fatigue_score:54,form_status:"Good",vo2_max:52,weekly_goal_km:70,total_activities:47,followers:213,following:89 },
+  weeklyProgress: { total_km:48.7,goal_km:70,change_pct:12,days:[8.2,5.6,10.1,4.1,7.2,2.1,0] },
+  todayPlan: { name:"Easy Run",distance_km:8,zone:2,duration_min:42 },
   activities: [
-    { id: "act_001", type: "run", name: "Morning Run", date: "Today, 7:14 AM", distance_km: 10.12, duration_seconds: 3542, avg_pace_sec_per_km: 350, avg_hr: 152, calories: 658 },
-    { id: "act_002", type: "run", name: "Lunch Easy Run", date: "Yesterday", distance_km: 5.63, duration_seconds: 1980, avg_pace_sec_per_km: 352, avg_hr: 144, calories: 366 },
-    { id: "act_003", type: "ride", name: "Evening Ride", date: "Mon, 6 Jan", distance_km: 32.5, duration_seconds: 5400, avg_pace_sec_per_km: 166, avg_hr: 138, calories: 812 },
-    { id: "act_004", type: "run", name: "Long Run Sunday", date: "Sun, 5 Jan", distance_km: 18.2, duration_seconds: 6372, avg_pace_sec_per_km: 350, avg_hr: 158, calories: 1183 }
+    {id:"act_001",type:"run",name:"Morning Run",date:"Today, 7:14 AM",distance_km:10.12,duration_seconds:3542,avg_pace_sec_per_km:350,avg_hr:152,calories:658},
+    {id:"act_002",type:"run",name:"Lunch Easy Run",date:"Yesterday",distance_km:5.63,duration_seconds:1980,avg_pace_sec_per_km:352,avg_hr:144,calories:366},
+    {id:"act_003",type:"ride",name:"Evening Ride",date:"Mon, 6 Jan",distance_km:32.5,duration_seconds:5400,avg_pace_sec_per_km:166,avg_hr:138,calories:812},
+    {id:"act_004",type:"run",name:"Long Run Sunday",date:"Sun, 5 Jan",distance_km:18.2,duration_seconds:6372,avg_pace_sec_per_km:350,avg_hr:158,calories:1183}
   ],
   communityFeed: [
-    { id: "feed_001", user_id: "u2", user_name: "Sarah Chen", location: "London, UK", posted_at: "2025-01-09T08:30:00", title: "PB at Hyde Park parkrun! 🏆", distance_km: 5.0, duration_seconds: 1260, avg_pace_sec_per_km: 252, likes: 42, comments: 8, liked_by_me: false },
-    { id: "feed_002", user_id: "u3", user_name: "Marcus Webb", location: "Manchester", posted_at: "2025-01-09T06:15:00", title: "Cold but worth it 🥶", distance_km: 12.4, duration_seconds: 4092, avg_pace_sec_per_km: 330, likes: 28, comments: 5, liked_by_me: true },
-    { id: "feed_003", user_id: "u4", user_name: "Emma Patel", location: "Birmingham", posted_at: "2025-01-08T17:45:00", title: "Half marathon prep continues", distance_km: 16.8, duration_seconds: 5544, avg_pace_sec_per_km: 330, likes: 61, comments: 14, liked_by_me: false },
-    { id: "feed_004", user_id: "u5", user_name: "Tom Okafor", location: "Bristol", posted_at: "2025-01-08T07:00:00", title: "Early morning 10K in the fog 🌫️", distance_km: 10.0, duration_seconds: 3180, avg_pace_sec_per_km: 318, likes: 19, comments: 3, liked_by_me: false }
+    {id:"feed_001",user_id:"u2",user_name:"Sarah Chen",location:"London, UK",posted_at:"2025-01-09T08:30:00",title:"PB at Hyde Park parkrun! 🏆",distance_km:5.0,duration_seconds:1260,avg_pace_sec_per_km:252,likes:42,comments:8,liked_by_me:false},
+    {id:"feed_002",user_id:"u3",user_name:"Marcus Webb",location:"Manchester",posted_at:"2025-01-09T06:15:00",title:"Cold but worth it 🥶",distance_km:12.4,duration_seconds:4092,avg_pace_sec_per_km:330,likes:28,comments:5,liked_by_me:true},
+    {id:"feed_003",user_id:"u4",user_name:"Emma Patel",location:"Birmingham",posted_at:"2025-01-08T17:45:00",title:"Half marathon prep continues",distance_km:16.8,duration_seconds:5544,avg_pace_sec_per_km:330,likes:61,comments:14,liked_by_me:false},
+    {id:"feed_004",user_id:"u5",user_name:"Tom Okafor",location:"Bristol",posted_at:"2025-01-08T07:00:00",title:"Early morning 10K in the fog 🌫️",distance_km:10.0,duration_seconds:3180,avg_pace_sec_per_km:318,likes:19,comments:3,liked_by_me:false}
   ],
   analytics: {
-    week: { total_km: 48.7, avg_pace_sec: 328, total_time_min: 268, avg_hr: 153, dist_change_pct: 12, pace_change_sec: 8,
-      pace_data: [340, 335, 330, 325, 328, 332, 328], hr_data: [148, 152, 155, 150, 153, 156, 153],
-      hr_zones: [5, 32, 38, 20, 5] },
-    month: { total_km: 186.4, avg_pace_sec: 332, total_time_min: 1024, avg_hr: 155, dist_change_pct: 8, pace_change_sec: 5,
-      pace_data: [345, 340, 338, 335, 332, 330, 328, 325, 328, 330, 332, 328, 325, 328, 332, 328, 325, 328, 330, 332, 328, 325, 322, 325, 328, 332, 330, 328, 325, 328],
-      hr_data: [150, 152, 155, 153, 156, 154, 152, 150, 153, 155, 157, 155, 153, 151, 153, 155, 157, 155, 153, 151, 153, 155, 157, 155, 153, 151, 150, 152, 153, 155],
-      hr_zones: [4, 28, 42, 22, 4] },
-    year: { total_km: 847.3, avg_pace_sec: 338, total_time_min: 4680, avg_hr: 154, dist_change_pct: 23, pace_change_sec: 15,
-      pace_data: [360, 355, 348, 345, 342, 338, 335, 332, 330, 335, 332, 338],
-      hr_data: [156, 155, 154, 155, 153, 154, 152, 153, 151, 152, 153, 154],
-      hr_zones: [6, 30, 40, 20, 4] },
-    all: { total_km: 2341.8, avg_pace_sec: 345, total_time_min: 13200, avg_hr: 155, dist_change_pct: 0, pace_change_sec: 22,
-      pace_data: [370, 365, 358, 352, 348, 345, 342, 340, 338, 335, 332, 330, 328, 330, 332, 330, 328, 326, 325, 328, 330, 332, 334, 336],
-      hr_data: [158, 157, 156, 155, 155, 154, 153, 154, 153, 152, 153, 152, 151, 152, 153, 154, 153, 152, 151, 152, 153, 154, 155, 154],
-      hr_zones: [5, 30, 42, 19, 4] }
+    week:{total_km:48.7,avg_pace_sec:328,total_time_min:268,avg_hr:153,dist_change_pct:12,pace_change_sec:8,pace_data:[340,335,330,325,328,332,328],hr_data:[148,152,155,150,153,156,153],hr_zones:[5,32,38,20,5]},
+    month:{total_km:186.4,avg_pace_sec:332,total_time_min:1024,avg_hr:155,dist_change_pct:8,pace_change_sec:5,pace_data:[345,340,338,335,332,330,328,325,328,330,332,328,325,328,332,328,325,328,330,332,328,325,322,325,328,332,330,328,325,328],hr_data:[150,152,155,153,156,154,152,150,153,155,157,155,153,151,153,155,157,155,153,151,153,155,157,155,153,151,150,152,153,155],hr_zones:[4,28,42,22,4]},
+    year:{total_km:847.3,avg_pace_sec:338,total_time_min:4680,avg_hr:154,dist_change_pct:23,pace_change_sec:15,pace_data:[360,355,348,345,342,338,335,332,330,335,332,338],hr_data:[156,155,154,155,153,154,152,153,151,152,153,154],hr_zones:[6,30,40,20,4]},
+    all:{total_km:2341.8,avg_pace_sec:345,total_time_min:13200,avg_hr:155,dist_change_pct:0,pace_change_sec:22,pace_data:[370,365,358,352,348,345,342,340,338,335,332,330,328,330,332,330,328,326,325,328,330,332,334,336],hr_data:[158,157,156,155,155,154,153,154,153,152,153,152,151,152,153,154,153,152,151,152,153,154,155,154],hr_zones:[5,30,42,19,4]}
   },
-  personalRecords: [
-    { distance_label: "5K", time: "21:08", date: "Dec 2024" },
-    { distance_label: "10K", time: "44:32", date: "Nov 2024" },
-    { distance_label: "HM", time: "1:38:14", date: "Oct 2024" },
-    { distance_label: "Mar", time: "3:32:48", date: "Apr 2024" }
-  ],
-  badges: [
-    { icon: "🏃", name: "100 Runs" }, { icon: "🌙", name: "Night Owl" },
-    { icon: "⚡", name: "Speed Demon" }, { icon: "🏔️", name: "Hill Climber" }
-  ],
-  devices: [
-    { id: "d1", name: "Garmin Forerunner 265", icon: "⌚", connected: true },
-    { id: "d2", name: "Apple Health", icon: "🍎", connected: true },
-    { id: "d3", name: "Strava", icon: "🔶", connected: false },
-    { id: "d4", name: "Polar H10 HRM", icon: "💙", connected: false }
-  ]
+  personalRecords: [{distance_label:"5K",time:"21:08",date:"Dec 2024"},{distance_label:"10K",time:"44:32",date:"Nov 2024"},{distance_label:"HM",time:"1:38:14",date:"Oct 2024"},{distance_label:"Mar",time:"3:32:48",date:"Apr 2024"}],
+  badges: [{icon:"🏃",name:"100 Runs"},{icon:"🌙",name:"Night Owl"},{icon:"⚡",name:"Speed Demon"},{icon:"🏔️",name:"Hill Climber"}],
+  devices: [{id:"d1",name:"Garmin Forerunner 265",icon:"⌚",connected:true},{id:"d2",name:"Apple Health",icon:"🍎",connected:true},{id:"d3",name:"Strava",icon:"🔶",connected:false},{id:"d4",name:"Polar H10 HRM",icon:"💙",connected:false}]
 };
 
-// ═══════════════════════════════════════════════
-// UTILS
-// ═══════════════════════════════════════════════
-function showToast(msg, type="") {
-  const t = document.getElementById("toast");
-  t.textContent = msg; t.className = "toast"+(type?" "+type:"")+" show";
-  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove("show"), 3000);
-}
-function setText(id, val) { const el=document.getElementById(id); if(el&&val!=null) el.textContent=val; }
-function setHTML(id, val) { const el=document.getElementById(id); if(el&&val!=null) el.innerHTML=val; }
-function formatPace(sec) {
-  if(!sec||sec<=0||!isFinite(sec)) return "--'--\"";
-  const m=Math.floor(sec/60), s=Math.round(sec%60);
-  return `${m}'${String(s).padStart(2,'0')}"`;
-}
-function formatDur(sec) {
-  const h=Math.floor(sec/3600), m=Math.floor((sec%3600)/60), s=sec%60;
-  if(h>0) return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-}
-function formatDurLong(sec) {
-  const h=Math.floor(sec/3600), m=Math.floor((sec%3600)/60), s=sec%60;
-  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-}
-function showNotifications() { showToast("No new notifications 🔔"); }
+function showToast(msg,type=""){const t=document.getElementById("toast");t.textContent=msg;t.className="toast"+(type?" "+type:"")+" show";clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),3000);}
+function setText(id,val){const el=document.getElementById(id);if(el&&val!=null)el.textContent=val;}
+function setHTML(id,val){const el=document.getElementById(id);if(el&&val!=null)el.innerHTML=val;}
+function formatPace(sec){if(!sec||sec<=0||!isFinite(sec))return"--'--\"";const m=Math.floor(sec/60),s=Math.round(sec%60);return`${m}'${String(s).padStart(2,'0')}"`;}
+function formatDur(sec){const h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),s=sec%60;if(h>0)return`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;return`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;}
+function formatDurLong(sec){const h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),s=sec%60;return`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;}
+function showNotifications(){showToast("No new notifications 🔔");}
 
-// ═══════════════════════════════════════════════
-// NAVIGATION
-// ═══════════════════════════════════════════════
-let currentScreen = 'home';
-function switchScreen(id) {
-  if(id === currentScreen && id !== 'run') return;
-  currentScreen = id;
-  document.querySelectorAll('.screen').forEach(s => {
-    s.classList.remove('active');
-    s.style.transform = 'translateX(24px)';
-    s.style.opacity = '0';
-    s.style.pointerEvents = 'none';
-  });
-  const t = document.getElementById('screen-'+id);
-  if(t) setTimeout(() => {
-    t.classList.add('active');
-    t.style.transform = 'none';
-    t.style.opacity = '1';
-    t.style.pointerEvents = 'all';
-    t.scrollTop = 0;
-  }, 40);
-  document.querySelectorAll('.nav-item').forEach(i => i.classList.toggle('active', i.dataset.screen===id));
-  const loaders = {
-    home: loadHomeScreen, run: initLiveRun,
-    analytics: loadAnalytics, community: loadCommunityFeed,
-    profile: loadProfile, settings: loadDevices, aichat: initChat
-  };
-  if(loaders[id]) loaders[id]();
+let currentScreen='home';
+function switchScreen(id){
+  if(id===currentScreen&&id!=='run')return;
+  currentScreen=id;
+  document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');s.style.transform='translateX(24px)';s.style.opacity='0';s.style.pointerEvents='none';});
+  const t=document.getElementById('screen-'+id);
+  if(t)setTimeout(()=>{t.classList.add('active');t.style.transform='none';t.style.opacity='1';t.style.pointerEvents='all';t.scrollTop=0;},40);
+  document.querySelectorAll('.nav-item').forEach(i=>i.classList.toggle('active',i.dataset.screen===id));
+  const loaders={home:loadHomeScreen,run:initLiveRun,analytics:loadAnalytics,community:loadCommunityFeed,profile:loadProfile,settings:loadDevices,aichat:initChat};
+  if(loaders[id])loaders[id]();
 }
 
-// ═══════════════════════════════════════════════
-// HOME SCREEN
-// ═══════════════════════════════════════════════
-function loadHomeScreen() {
-  loadWeeklyProgress();
-  loadTodayPlan();
-  loadAIRecommendation();
-  loadActivities();
+function loadHomeScreen(){loadWeeklyProgress();loadTodayPlan();loadAIRecommendation();loadActivities();}
+function loadWeeklyProgress(){
+  const d=DB.weeklyProgress;const dist=d.total_km,goal=d.goal_km;const pct=Math.round((dist/goal)*100);
+  setText("weekly-dist",dist.toFixed(1));setText("weekly-goal",goal);setText("ring-pct",pct+"%");setText("weekly-change",`↑ ${d.change_pct}% vs last week`);
+  const ring=document.getElementById("main-ring");
+  if(ring){const c=2*Math.PI*34;ring.style.strokeDasharray=c;setTimeout(()=>{ring.style.strokeDashoffset=c*(1-Math.min(pct,100)/100);},300);}
+  const kmArr=d.days,labels=['M','T','W','T','F','S','S'];const maxKm=Math.max(...kmArr,1);
+  setHTML("day-bars",kmArr.map((km,i)=>`<div class="day-col"><div class="day-bar-wrap"><div class="day-bar ${km>0?'active':'rest'}" style="height:${Math.max(4,Math.round((km/maxKm)*100))}%"></div></div><div class="day-lbl">${labels[i]}</div></div>`).join(''));
 }
-
-function loadWeeklyProgress() {
-  const d = DB.weeklyProgress;
-  const dist = d.total_km, goal = d.goal_km;
-  const pct = Math.round((dist/goal)*100);
-  setText("weekly-dist", dist.toFixed(1));
-  setText("weekly-goal", goal);
-  setText("ring-pct", pct+"%");
-  setText("weekly-change", `↑ ${d.change_pct}% vs last week`);
-  const ring = document.getElementById("main-ring");
-  if(ring){ const c=2*Math.PI*34; ring.style.strokeDasharray=c; setTimeout(()=>{ ring.style.strokeDashoffset=c*(1-Math.min(pct,100)/100); },300); }
-  const kmArr = d.days, labels=['M','T','W','T','F','S','S'];
-  const maxKm = Math.max(...kmArr,1);
-  setHTML("day-bars", kmArr.map((km,i)=>`
-    <div class="day-col">
-      <div class="day-bar-wrap"><div class="day-bar ${km>0?'active':'rest'}" style="height:${Math.max(4,Math.round((km/maxKm)*100))}%"></div></div>
-      <div class="day-lbl">${labels[i]}</div>
-    </div>`).join(''));
+function loadTodayPlan(){const d=DB.todayPlan;setText("plan-name",d.name);setText("plan-meta",`${d.distance_km} km · Zone ${d.zone} · ~${d.duration_min} min`);}
+function loadAIRecommendation(){
+  const u=DB.user;const fat=u.fatigue_score;let recName,recDetail,recDesc;
+  if(fat>70){recName="Rest Day";recDetail="No running today";recDesc="Your body needs recovery. High fatigue can reduce performance and increase injury risk.";}
+  else if(fat>55){recName="Recovery Run";recDetail="5 km · Zone 1–2";recDesc="A light run will help circulation and speed up recovery without adding too much training stress.";}
+  else{recName="Easy Run";recDetail="8 km · Zone 2";recDesc="Based on your recent training load and recovery, an easy aerobic run will build your aerobic base efficiently.";}
+  setText("ai-greeting",`Hi ${u.name.split(' ')[0]}! 👋`);setText("ai-title",`Hi ${u.name.split(' ')[0]}! 👋`);
+  setText("ai-reco-name",recName);setText("ai-reco-detail",recDetail);setText("ai-reco-desc",recDesc);
+  setText("fitness-score",u.fitness_score);setText("fatigue-score",u.fatigue_score);setText("form-score",u.form_status);
+  setText("fitness-badge","+6 pts");setText("fatigue-badge",fat<40?"Low":fat<60?"Moderate":"High");
+  setText("form-badge",u.form_status==="Good"?"On track":"Check form");
+  setText("home-username",u.name.split(' ')[0]);
+  setText("home-avatar",u.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase());
 }
-
-function loadTodayPlan() {
-  const d = DB.todayPlan;
-  setText("plan-name", d.name);
-  setText("plan-meta", `${d.distance_km} km · Zone ${d.zone} · ~${d.duration_min} min`);
-}
-
-function loadAIRecommendation() {
-  const u = DB.user;
-  const fat = u.fatigue_score;
-  let recName, recDetail, recDesc;
-  if(fat > 70) {
-    recName="Rest Day"; recDetail="No running today";
-    recDesc="Your body needs recovery. High fatigue can reduce performance and increase injury risk. Take a full rest day.";
-  } else if(fat > 55) {
-    recName="Recovery Run"; recDetail="5 km · Zone 1–2";
-    recDesc="A light run will help circulation and speed up recovery without adding too much training stress.";
-  } else {
-    recName="Easy Run"; recDetail="8 km · Zone 2";
-    recDesc="Based on your recent training load and recovery, an easy aerobic run will build your aerobic base efficiently.";
-  }
-  setText("ai-greeting", `Hi ${u.name.split(' ')[0]}! 👋`);
-  setText("ai-title", `Hi ${u.name.split(' ')[0]}! 👋`);
-  setText("ai-reco-name", recName);
-  setText("ai-reco-detail", recDetail);
-  setText("ai-reco-desc", recDesc);
-  setText("fitness-score", u.fitness_score);
-  setText("fatigue-score", u.fatigue_score);
-  setText("form-score", u.form_status);
-  setText("fitness-badge", `+6 pts`);
-  setText("fatigue-badge", fat<40?"Low":fat<60?"Moderate":"High");
-  setText("form-badge", u.form_status==="Good"?"On track":"Check form");
-  setText("home-username", u.name.split(' ')[0]);
-  setText("home-avatar", u.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase());
-}
-
-function loadActivities() {
-  const list = DB.activities;
-  if(!list.length){ setHTML("activities-list",'<div class="empty-state">No recent activities</div>'); return; }
+function loadActivities(){
+  const list=DB.activities;
+  if(!list.length){setHTML("activities-list",'<div class="empty-state">No recent activities</div>');return;}
   const iconRun=`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F4531C" stroke-width="2.2"><circle cx="12" cy="4" r="2"/><path d="M15.89 8.11C15.5 7.08 14.5 6 13 6h-2c-1.1 0-1.99.9-1.99 2v6H11v6h2v-6h1.5l1.5-4.5"/><path d="M6.5 15.5L5 19"/></svg>`;
   const iconRide=`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2.2"><circle cx="5" cy="17" r="3"/><circle cx="19" cy="17" r="3"/><path d="M5 17L9 6H15L18 17M13 6L16 10H9" stroke-linecap="round"/></svg>`;
-  setHTML("activities-list", list.slice(0,4).map(a=>`
-    <div class="activity-item" onclick="showToast('${a.name} · ${a.distance_km} km')">
-      <div class="act-icon ${a.type}">${a.type==='ride'?iconRide:iconRun}</div>
-      <div class="act-info"><div class="act-name">${a.name}</div><div class="act-date">${a.date}</div></div>
-      <div class="act-stats"><div class="act-dist">${a.distance_km.toFixed(2)} km</div><div class="act-time">${formatDur(a.duration_seconds)}</div></div>
-    </div>`).join(''));
+  setHTML("activities-list",list.slice(0,4).map(a=>`<div class="activity-item" onclick="showToast('${a.name} · ${a.distance_km} km')"><div class="act-icon ${a.type}">${a.type==='ride'?iconRide:iconRun}</div><div class="act-info"><div class="act-name">${a.name}</div><div class="act-date">${a.date}</div></div><div class="act-stats"><div class="act-dist">${a.distance_km.toFixed(2)} km</div><div class="act-time">${formatDur(a.duration_seconds)}</div></div></div>`).join(''));
 }
 
-// ═══════════════════════════════════════════════
+let timerInterval=null,isPaused=true,runStarted=false;
+let runSeconds=0,runDistKm=0,runCal=0,laps=[];
+let gpsCoords=[],watchId=null,lastLat=null,lastLon=null;
+let leafletMap=null,runPolyline=null,runMarker=null,leafletReady=false;
 
-// ═══════════════════════════════════════════════
-// LIVE RUN — GPS BENERAN + LEAFLET MAP
-// ═══════════════════════════════════════════════
-let runInterval = null, timerInterval = null;
-let isPaused = true, runStarted = false;
-let runSeconds = 0, runDistKm = 0, runCal = 0, laps = [];
-let gpsCoords = [], watchId = null;
-let lastLat = null, lastLon = null;
-let leafletMap = null, runPolyline = null, runMarker = null;
-let leafletReady = false;
-
-// ── Haversine distance (metres) ──────────────────
-function haversineM(lat1, lon1, lat2, lon2) {
-  const R = 6371000;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+function haversineM(lat1,lon1,lat2,lon2){
+  const R=6371000,dLat=(lat2-lat1)*Math.PI/180,dLon=(lon2-lon1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
 }
-
-// ── Load Leaflet CSS + JS lazily ──────────────────
-function loadLeaflet(cb) {
-  if (window.L) { cb(); return; }
-  const css = document.createElement('link');
-  css.rel = 'stylesheet';
-  css.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-  document.head.appendChild(css);
-  const js = document.createElement('script');
-  js.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-  js.onload = cb;
-  document.head.appendChild(js);
+function loadLeaflet(cb){
+  if(window.L){cb();return;}
+  const css=document.createElement('link');css.rel='stylesheet';css.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';document.head.appendChild(css);
+  const js=document.createElement('script');js.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';js.onload=cb;document.head.appendChild(js);
 }
-
-// ── Init map on first run screen open ────────────
-function initLeafletMap(lat, lon) {
-  if (leafletMap) return;
-  const el = document.getElementById('leaflet-map');
-  if (!el || !window.L) return;
-  leafletMap = L.map('leaflet-map', {
-    zoomControl: false,
-    attributionControl: false,
-    dragging: false,
-    scrollWheelZoom: false,
-    doubleClickZoom: false,
-    touchZoom: false,
-  }).setView([lat, lon], 16);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-  }).addTo(leafletMap);
-  // Orange run route polyline
-  runPolyline = L.polyline([], {color: '#F4531C', weight: 4, opacity: 0.85}).addTo(leafletMap);
-  // Custom orange dot marker
-  const icon = L.divIcon({
-    className: '',
-    html: '<div style="width:16px;height:16px;border-radius:50%;background:#F4531C;border:3px solid white;box-shadow:0 2px 8px rgba(244,83,28,0.5);"></div>',
-    iconSize: [16, 16],
-    iconAnchor: [8, 8],
-  });
-  runMarker = L.marker([lat, lon], {icon}).addTo(leafletMap);
-  leafletReady = true;
-  document.getElementById('gps-waiting').style.display = 'none';
-  // Fix map render inside phone frame
-  setTimeout(() => leafletMap.invalidateSize(), 200);
+function initLeafletMap(lat,lon){
+  if(leafletMap)return;
+  const el=document.getElementById('leaflet-map');if(!el||!window.L)return;
+  leafletMap=L.map('leaflet-map',{zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,touchZoom:false}).setView([lat,lon],16);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(leafletMap);
+  runPolyline=L.polyline([],{color:'#F4531C',weight:4,opacity:0.85}).addTo(leafletMap);
+  const icon=L.divIcon({className:'',html:'<div style="width:16px;height:16px;border-radius:50%;background:#F4531C;border:3px solid white;box-shadow:0 2px 8px rgba(244,83,28,0.5);"></div>',iconSize:[16,16],iconAnchor:[8,8]});
+  runMarker=L.marker([lat,lon],{icon}).addTo(leafletMap);
+  leafletReady=true;
+  document.getElementById('gps-waiting').style.display='none';
+  setTimeout(()=>leafletMap.invalidateSize(),200);
 }
-
-function updateMapPosition(lat, lon) {
-  if (!leafletMap || !leafletReady) return;
-  const latlng = [lat, lon];
-  runMarker.setLatLng(latlng);
-  runPolyline.addLatLng(latlng);
-  leafletMap.panTo(latlng, {animate: true, duration: 0.8});
+function updateMapPosition(lat,lon){
+  if(!leafletMap||!leafletReady)return;
+  const latlng=[lat,lon];runMarker.setLatLng(latlng);runPolyline.addLatLng(latlng);
+  leafletMap.panTo(latlng,{animate:true,duration:0.8});
 }
-
-// ── GPS watch ────────────────────────────────────
-function startGPS() {
-  if (!navigator.geolocation) {
-    setText('gps-label', 'No GPS');
-    showToast('GPS not available on this device', 'error');
-    return;
-  }
-  document.getElementById('gps-status').style.color = 'var(--yellow)';
-  setText('gps-label', 'Searching…');
-
-  watchId = navigator.geolocation.watchPosition(
-    (pos) => {
-      const { latitude: lat, longitude: lon, accuracy } = pos.coords;
-      document.getElementById('gps-status').style.color = 'var(--green)';
-      setText('gps-label', `GPS ±${Math.round(accuracy)}m`);
-
-      if (!leafletReady) {
-        initLeafletMap(lat, lon);
-      }
-
-      if (!isPaused && runStarted) {
-        if (lastLat !== null && accuracy < 30) {
-          const dist = haversineM(lastLat, lastLon, lat, lon);
-          if (dist > 2 && dist < 200) { // filter noise & teleports
-            runDistKm += dist / 1000;
-          }
+function startGPS(){
+  if(!navigator.geolocation){setText('gps-label','No GPS');showToast('GPS not available','error');return;}
+  document.getElementById('gps-status').style.color='var(--yellow)';setText('gps-label','Searching…');
+  watchId=navigator.geolocation.watchPosition(
+    (pos)=>{
+      const{latitude:lat,longitude:lon,accuracy}=pos.coords;
+      document.getElementById('gps-status').style.color='var(--green)';
+      setText('gps-label',`GPS ±${Math.round(accuracy)}m`);
+      if(!leafletReady)initLeafletMap(lat,lon);
+      if(!isPaused&&runStarted){
+        if(lastLat!==null&&accuracy<100){
+          const dist=haversineM(lastLat,lastLon,lat,lon);
+          if(dist>1&&dist<500)runDistKm+=dist/1000;
         }
-        lastLat = lat; lastLon = lon;
-        updateMapPosition(lat, lon);
-        gpsCoords.push([lat, lon]);
-      } else if (lastLat === null) {
-        lastLat = lat; lastLon = lon;
-        updateMapPosition(lat, lon);
-      }
+        lastLat=lat;lastLon=lon;updateMapPosition(lat,lon);gpsCoords.push([lat,lon]);
+      }else if(lastLat===null){lastLat=lat;lastLon=lon;updateMapPosition(lat,lon);}
     },
-    (err) => {
-      document.getElementById('gps-status').style.color = 'var(--red)';
-      if (err.code === 1) {
-        setText('gps-label', 'Blocked');
-        showToast('Please allow location access for GPS tracking', 'error');
-        document.getElementById('gps-waiting').innerHTML = `
-          <div style="font-size:24px">📍</div>
-          <div style="font-size:13px;font-weight:600;color:var(--text-primary);text-align:center;padding:0 20px">Location access blocked</div>
-          <div style="font-size:11px;color:var(--text-tertiary);text-align:center;padding:0 16px">Go to browser settings → allow location for this page</div>`;
-      } else {
-        setText('gps-label', 'Weak signal');
-      }
+    (err)=>{
+      document.getElementById('gps-status').style.color='var(--red)';
+      if(err.code===1){setText('gps-label','Blocked');showToast('Allow location access for GPS','error');
+        document.getElementById('gps-waiting').innerHTML=`<div style="font-size:24px">📍</div><div style="font-size:13px;font-weight:600;color:var(--text-primary);text-align:center;padding:0 20px">Location access blocked</div><div style="font-size:11px;color:var(--text-tertiary);text-align:center;padding:0 16px">Go to browser settings → allow location</div>`;
+      }else setText('gps-label','Weak signal');
     },
-    { enableHighAccuracy: true, maximumAge: 1000, timeout: 15000 }
+    {enableHighAccuracy:true,maximumAge:1000,timeout:15000}
   );
 }
-
-function stopGPS() {
-  if (watchId !== null) {
-    navigator.geolocation.clearWatch(watchId);
-    watchId = null;
+function stopGPS(){if(watchId!==null){navigator.geolocation.clearWatch(watchId);watchId=null;}}
+function startTimer(){
+  if(timerInterval)clearInterval(timerInterval);
+  timerInterval=setInterval(()=>{if(isPaused)return;runSeconds++;runCal+=0.21;updateRunUI();},1000);
+}
+function updateRunUI(){
+  setText('live-time',formatDurLong(runSeconds));
+  setHTML('live-dist',runDistKm.toFixed(2)+'<span class="run-stat-unit">km</span>');
+  setHTML('live-cal',Math.round(runCal)+'<span class="run-stat-unit">kcal</span>');
+  if(runDistKm>=0.05&&runSeconds>0){const paceStr=formatPace(runSeconds/runDistKm);setText('live-pace',paceStr);setHTML('live-avg-pace',paceStr+'<span class="run-stat-unit">/km</span>');}
+}
+function initLiveRun(){
+  if(timerInterval)clearInterval(timerInterval);
+  isPaused=true;runStarted=false;runSeconds=0;runDistKm=0;runCal=0;laps=[];lastLat=null;lastLon=null;gpsCoords=[];
+  setText('run-status-label','READY');setText('live-pace','--\'--"');
+  setHTML('live-dist','0.00<span class="run-stat-unit">km</span>');setText('live-time','00:00:00');
+  setHTML('live-avg-pace','--\'--"<span class="run-stat-unit">/km</span>');setHTML('live-cal','0<span class="run-stat-unit">kcal</span>');setHTML('laps-list','');
+  const pi=document.getElementById('pause-icon');if(pi)pi.innerHTML='<polygon points="5 3 19 12 5 21 5 3" fill="white"/>';
+  const rd=document.getElementById('run-dot');if(rd){rd.classList.remove('live');rd.style.background='var(--green)';}
+  if(runPolyline)runPolyline.setLatLngs([]);
+  document.getElementById('gps-waiting').style.display=leafletReady?'none':'flex';
+  loadLeaflet(()=>startGPS());
+}
+function togglePause(){
+  if(!runStarted){
+    runStarted=true;isPaused=false;setText('run-status-label','RUNNING');
+    const pi=document.getElementById('pause-icon');if(pi)pi.innerHTML='<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>';
+    const rd=document.getElementById('run-dot');if(rd){rd.classList.add('live');rd.style.background='var(--green)';}
+    showToast('Run started! 🏃','success');startTimer();return;
   }
+  isPaused=!isPaused;
+  const icon=document.getElementById('pause-icon');
+  if(isPaused){if(icon)icon.innerHTML='<polygon points="5 3 19 12 5 21 5 3" fill="white"/>';setText('run-status-label','PAUSED');showToast('Run paused ⏸');}
+  else{if(icon)icon.innerHTML='<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>';setText('run-status-label','RUNNING');}
 }
-
-// ── Timer ─────────────────────────────────────────
-function startTimer() {
-  if (timerInterval) clearInterval(timerInterval);
-  timerInterval = setInterval(() => {
-    if (isPaused) return;
-    runSeconds++;
-    runCal += 0.21; // ~75 kg runner estimate
-    updateRunUI();
-  }, 1000);
+function addLap(){
+  if(!runStarted){showToast('Start your run first!','error');return;}
+  const lapNum=laps.length+1;
+  const lapDistKm=runDistKm-(laps.length?laps[laps.length-1]._cumDist:0);
+  const lapSec=runSeconds-(laps.length?laps[laps.length-1]._cumSec:0);
+  laps.push({num:lapNum,dist:lapDistKm.toFixed(2),time:lapSec,_cumDist:runDistKm,_cumSec:runSeconds});
+  const lapPace=formatPace(lapSec/lapDistKm);
+  showToast(`Lap ${lapNum} — ${lapDistKm.toFixed(2)} km · ${lapPace}`,'success');
+  const el=document.getElementById('laps-list');
+  if(el)el.innerHTML+=`<div class="lap-item"><span class="lap-num">Lap ${lapNum}</span><span class="lap-dist">${lapDistKm.toFixed(2)} km</span><span class="lap-pace">${lapPace}</span></div>`;
 }
-
-function updateRunUI() {
-  setText('live-time', formatDurLong(runSeconds));
-  setHTML('live-dist', runDistKm.toFixed(2) + '<span class="run-stat-unit">km</span>');
-  setHTML('live-cal', Math.round(runCal) + '<span class="run-stat-unit">kcal</span>');
-  if (runDistKm >= 0.05 && runSeconds > 0) {
-    const paceStr = formatPace(runSeconds / runDistKm);
-    setText('live-pace', paceStr);
-    setHTML('live-avg-pace', paceStr + '<span class="run-stat-unit">/km</span>');
-  }
-}
-
-// ── Init run screen ───────────────────────────────
-function initLiveRun() {
-  // Reset state
-  if (timerInterval) clearInterval(timerInterval);
-  isPaused = true; runStarted = false;
-  runSeconds = 0; runDistKm = 0; runCal = 0; laps = [];
-  lastLat = null; lastLon = null; gpsCoords = [];
-
-  setText('run-status-label', 'READY');
-  setText('live-pace', '--\'--"');
-  setHTML('live-dist', '0.00<span class="run-stat-unit">km</span>');
-  setText('live-time', '00:00:00');
-  setHTML('live-avg-pace', '--\'--"<span class="run-stat-unit">/km</span>');
-  setHTML('live-cal', '0<span class="run-stat-unit">kcal</span>');
-  setHTML('laps-list', '');
-
-  const pi = document.getElementById('pause-icon');
-  if (pi) pi.innerHTML = '<polygon points="5 3 19 12 5 21 5 3" fill="white"/>';
-  const rd = document.getElementById('run-dot');
-  if (rd) { rd.classList.remove('live'); rd.style.background = 'var(--green)'; }
-
-  // Clear old map route
-  if (runPolyline) runPolyline.setLatLngs([]);
-  document.getElementById('gps-waiting').style.display = leafletReady ? 'none' : 'flex';
-
-  // Load Leaflet then start GPS
-  loadLeaflet(() => startGPS());
-}
-
-function togglePause() {
-  if (!runStarted) {
-    runStarted = true; isPaused = false;
-    setText('run-status-label', 'RUNNING');
-    const pi = document.getElementById('pause-icon');
-    if (pi) pi.innerHTML = '<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>';
-    const rd = document.getElementById('run-dot');
-    if (rd) { rd.classList.add('live'); rd.style.background = 'var(--green)'; }
-    showToast('Run started! 🏃', 'success');
-    startTimer();
-    return;
-  }
-  isPaused = !isPaused;
-  const icon = document.getElementById('pause-icon');
-  if (isPaused) {
-    if (icon) icon.innerHTML = '<polygon points="5 3 19 12 5 21 5 3" fill="white"/>';
-    setText('run-status-label', 'PAUSED');
-    showToast('Run paused ⏸');
-  } else {
-    if (icon) icon.innerHTML = '<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>';
-    setText('run-status-label', 'RUNNING');
-  }
-}
-
-function addLap() {
-  if (!runStarted) { showToast('Start your run first!', 'error'); return; }
-  const lapNum = laps.length + 1;
-  const lapDistKm = runDistKm - (laps.length ? laps[laps.length-1]._cumDist : 0);
-  const lapSec = runSeconds - (laps.length ? laps[laps.length-1]._cumSec : 0);
-  laps.push({ num: lapNum, dist: lapDistKm.toFixed(2), time: lapSec, _cumDist: runDistKm, _cumSec: runSeconds });
-  const lapPace = formatPace(lapSec / lapDistKm);
-  showToast(`Lap ${lapNum} — ${lapDistKm.toFixed(2)} km · ${lapPace}`, 'success');
-  const el = document.getElementById('laps-list');
-  if (el) el.innerHTML += `<div class="lap-item"><span class="lap-num">Lap ${lapNum}</span><span class="lap-dist">${lapDistKm.toFixed(2)} km</span><span class="lap-pace">${lapPace}</span></div>`;
-}
-
-function finishRun() {
-  if (!runStarted || runDistKm < 0.01) {
-    showToast('No run data to save', 'error');
-    if (timerInterval) clearInterval(timerInterval);
-    stopGPS();
-    switchScreen('home');
-    return;
-  }
-  if (timerInterval) clearInterval(timerInterval);
-  stopGPS();
-  isPaused = true;
-
-  const newAct = {
-    id: `act_${Date.now().toString(36)}`,
-    type: 'run', name: 'Run',
-    date: 'Just now',
-    distance_km: parseFloat(runDistKm.toFixed(2)),
-    duration_seconds: runSeconds,
-    avg_pace_sec_per_km: Math.round(runSeconds / runDistKm),
-    avg_hr: null, calories: Math.round(runCal),
-  };
+function finishRun(){
+  if(!runStarted||runDistKm<0.01){showToast('No run data to save','error');if(timerInterval)clearInterval(timerInterval);stopGPS();switchScreen('home');return;}
+  if(timerInterval)clearInterval(timerInterval);stopGPS();isPaused=true;
+  const newAct={id:`act_${Date.now().toString(36)}`,type:'run',name:'Run',date:'Just now',distance_km:parseFloat(runDistKm.toFixed(2)),duration_seconds:runSeconds,avg_pace_sec_per_km:Math.round(runSeconds/runDistKm),avg_hr:null,calories:Math.round(runCal)};
   DB.activities.unshift(newAct);
-  DB.weeklyProgress.total_km = parseFloat((DB.weeklyProgress.total_km + newAct.distance_km).toFixed(1));
-  DB.weeklyProgress.days[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1] += newAct.distance_km;
+  DB.weeklyProgress.total_km=parseFloat((DB.weeklyProgress.total_km+newAct.distance_km).toFixed(1));
+  DB.weeklyProgress.days[new Date().getDay()===0?6:new Date().getDay()-1]+=newAct.distance_km;
   DB.user.total_activities++;
-
-  // Save to localStorage
-  try {
-    const saved = JSON.parse(localStorage.getItem('pace_activities') || '[]');
-    saved.unshift({ ...newAct, gps_coords: gpsCoords });
-    localStorage.setItem('pace_activities', JSON.stringify(saved.slice(0, 50)));
-  } catch(e) {}
-
-  showToast(`Saved! ${runDistKm.toFixed(2)} km · ${formatPace(runSeconds / runDistKm)} /km ✅`, 'success');
-  setTimeout(() => switchScreen('home'), 1800);
+  try{const saved=JSON.parse(localStorage.getItem('pace_activities')||'[]');saved.unshift({...newAct,gps_coords:gpsCoords});localStorage.setItem('pace_activities',JSON.stringify(saved.slice(0,50)));}catch(e){}
+  showToast(`Saved! ${runDistKm.toFixed(2)} km · ${formatPace(runSeconds/runDistKm)} /km ✅`,'success');
+  setTimeout(()=>switchScreen('home'),1800);
 }
+function clearAllData(){DB.activities=DB.activities.slice(3);localStorage.removeItem('pace_activities');showToast('Run data reset','success');}
 
-function clearAllData() {
-  DB.activities = DB.activities.slice(3);
-  localStorage.removeItem('pace_activities');
-  showToast('Run data reset', 'success');
-}
-
-
-// ANALYTICS
-// ═══════════════════════════════════════════════
 let currentPeriod='week';
-function loadAnalytics() {
-  const d = DB.analytics[currentPeriod];
-  if(!d) return;
-  setText("ana-dist", `${d.total_km.toFixed(1)}`);
-  setHTML("ana-dist", `${d.total_km.toFixed(1)} <span class="shc-unit">km</span>`);
-  const ps = formatPace(d.avg_pace_sec);
-  setHTML("ana-pace", `${ps} <span class="shc-unit">/km</span>`);
-  setText("pace-chart-avg", ps);
-  setHTML("ana-time", `${d.total_time_min} <span class="shc-unit">min</span>`);
-  setText("hr-avg", `${d.avg_hr} bpm`);
-  const dc=d.dist_change_pct, dEl=document.getElementById("ana-dist-change");
+function loadAnalytics(){
+  const d=DB.analytics[currentPeriod];if(!d)return;
+  setHTML("ana-dist",`${d.total_km.toFixed(1)} <span class="shc-unit">km</span>`);
+  const ps=formatPace(d.avg_pace_sec);setHTML("ana-pace",`${ps} <span class="shc-unit">/km</span>`);setText("pace-chart-avg",ps);
+  setHTML("ana-time",`${d.total_time_min} <span class="shc-unit">min</span>`);setText("hr-avg",`${d.avg_hr} bpm`);
+  const dc=d.dist_change_pct,dEl=document.getElementById("ana-dist-change");
   if(dEl){dEl.textContent=`↑ ${Math.abs(dc)}% vs last`;dEl.className=`shc-change ${dc>=0?'shc-up':'shc-down'}`;}
-  const pc=d.pace_change_sec, pEl=document.getElementById("ana-pace-change");
+  const pc=d.pace_change_sec,pEl=document.getElementById("ana-pace-change");
   if(pEl){pEl.textContent=pc>=0?`↑ ${pc}s faster`:`↓ ${Math.abs(pc)}s slower`;pEl.className=`shc-change ${pc>=0?'shc-up':'shc-down'}`;}
-  renderLineChart('pace-line-path','pace-area-path', d.pace_data, 300, 420);
-  renderLineChart('hr-line-path','hr-area-path', d.hr_data, 100, 185, true);
-  renderHRZones(d.hr_zones);
-  setText("vo2-value", DB.user.vo2_max);
+  renderLineChart('pace-line-path','pace-area-path',d.pace_data,300,420);
+  renderLineChart('hr-line-path','hr-area-path',d.hr_data,100,185,true);
+  renderHRZones(d.hr_zones);setText("vo2-value",DB.user.vo2_max);
 }
-
-function renderLineChart(lineId, areaId, data, minVal, maxVal, inverted=false) {
-  if(!data||!data.length) return;
-  const w=320, h=70, padL=22, n=data.length;
-  const pts = data.map((v,i)=>{
-    const norm=(v-minVal)/Math.max(maxVal-minVal,1);
-    const x=padL+(i/Math.max(n-1,1))*(w-padL);
-    const y=10+(inverted?(1-norm):norm)*(h-10);
-    return `${x},${Math.min(h,Math.max(10,y))}`;
-  });
+function renderLineChart(lineId,areaId,data,minVal,maxVal,inverted=false){
+  if(!data||!data.length)return;
+  const w=320,h=70,padL=22,n=data.length;
+  const pts=data.map((v,i)=>{const norm=(v-minVal)/Math.max(maxVal-minVal,1);const x=padL+(i/Math.max(n-1,1))*(w-padL);const y=10+(inverted?(1-norm):norm)*(h-10);return`${x},${Math.min(h,Math.max(10,y))}`;});
   const line='M'+pts.join(' L');
-  const lEl=document.getElementById(lineId), aEl=document.getElementById(areaId);
-  if(lEl) lEl.setAttribute('d',line);
-  if(aEl) aEl.setAttribute('d',line+` L${w},${h} L${padL},${h} Z`);
+  const lEl=document.getElementById(lineId),aEl=document.getElementById(areaId);
+  if(lEl)lEl.setAttribute('d',line);if(aEl)aEl.setAttribute('d',line+` L${w},${h} L${padL},${h} Z`);
+}
+function renderHRZones(zones){
+  const colors=[{bg:'#EFF6FF',c:'#3B82F6',name:'Z1',range:'<120'},{bg:'#F0FDF4',c:'#22C55E',name:'Z2',range:'120–140'},{bg:'#FFFBEB',c:'#F59E0B',name:'Z3',range:'140–160'},{bg:'#FFF7ED',c:'#F97316',name:'Z4',range:'160–175'},{bg:'#FEF2F2',c:'#EF4444',name:'Z5',range:'>175'}];
+  setHTML("hr-zones-container",zones.map((pct,i)=>{const c=colors[i]||colors[4];return`<div class="hr-zone" style="background:${c.bg}"><div class="hrz-name" style="color:${c.c}">${c.name}</div><div class="hrz-range" style="color:${c.c}">${c.range}</div><div class="hrz-pct" style="color:${c.c}">${pct}%</div><div class="hrz-bar" style="background:${c.c};width:${Math.min(pct,100)}%"></div></div>`;}).join(''));
+}
+function setAnalyticsTab(el,period){document.querySelectorAll('.a-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');currentPeriod=period;loadAnalytics();}
+
+const SUGGESTIONS=["What's my ideal pace for easy runs?","How do I improve my VO2 max?","Should I run today or rest?","How to avoid injury during training?","Tips for half marathon preparation?"];
+let chatMessages=[],isChatLoading=false;
+function initChat(){
+  const container=document.getElementById('chat-messages');if(!container)return;
+  const chips=document.getElementById('suggestion-chips');
+  if(chips&&!chips.innerHTML)chips.innerHTML=SUGGESTIONS.map(s=>`<div class="suggestion-chip" onclick="sendSuggestion('${s}')">${s}</div>`).join('');
+  if(chatMessages.length===0)appendChatBubble("ai","Hi Alex! 👋 I'm your PACE AI Coach. I've analyzed your recent training data:\n\n📊 Fitness: 82 (+6 pts) · Fatigue: 54 (Moderate) · VO2 Max: 52\n\nAsk me anything about your training, recovery, or race preparation!");
+}
+function appendChatBubble(role,text){
+  const container=document.getElementById('chat-messages');if(!container)return;
+  const now=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  const div=document.createElement('div');div.className=`chat-msg ${role}`;
+  div.innerHTML=`<div class="chat-bubble">${text.replace(/\n/g,'<br>')}</div><div class="chat-time">${now}</div>`;
+  container.appendChild(div);chatMessages.push({role:role==='user'?'user':'assistant',content:text});
+  setTimeout(()=>{container.scrollTop=container.scrollHeight;},50);
+}
+function showTyping(){const container=document.getElementById('chat-messages');if(!container)return;const div=document.createElement('div');div.className='chat-msg ai';div.id='typing-indicator';div.innerHTML=`<div class="chat-bubble" style="padding:12px 16px"><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;container.appendChild(div);container.scrollTop=container.scrollHeight;}
+function removeTyping(){const t=document.getElementById('typing-indicator');if(t)t.remove();}
+async function sendSuggestion(text){document.getElementById('chat-input').value=text;sendChatMessage();}
+function handleChatKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChatMessage();}}
+function autoResizeChat(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,80)+'px';}
+async function sendChatMessage(){
+  if(isChatLoading)return;
+  const input=document.getElementById('chat-input');const msg=input.value.trim();if(!msg)return;
+  input.value='';input.style.height='auto';appendChatBubble('user',msg);isChatLoading=true;
+  const btn=document.getElementById('chat-send-btn');if(btn)btn.disabled=true;showTyping();
+  try{
+    const response=await fetch(`${API_BASE}/ai-coach/chat`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:msg,user_id:"user_alex"})});
+    const data=await response.json();removeTyping();
+    appendChatBubble('ai',data.reply||"Sorry, I couldn't connect right now. Please try again!");
+  }catch(e){removeTyping();appendChatBubble('ai',"I'm having trouble connecting right now. Check your internet and try again! 🔄");}
+  finally{isChatLoading=false;if(btn)btn.disabled=false;}
 }
 
-function renderHRZones(zones) {
-  const colors=[
-    {bg:'#EFF6FF',c:'#3B82F6',name:'Z1',range:'<120'},
-    {bg:'#F0FDF4',c:'#22C55E',name:'Z2',range:'120–140'},
-    {bg:'#FFFBEB',c:'#F59E0B',name:'Z3',range:'140–160'},
-    {bg:'#FFF7ED',c:'#F97316',name:'Z4',range:'160–175'},
-    {bg:'#FEF2F2',c:'#EF4444',name:'Z5',range:'>175'}
-  ];
-  setHTML("hr-zones-container", zones.map((pct,i)=>{
-    const c=colors[i]||colors[4];
-    return `<div class="hr-zone" style="background:${c.bg}">
-      <div class="hrz-name" style="color:${c.c}">${c.name}</div>
-      <div class="hrz-range" style="color:${c.c}">${c.range}</div>
-      <div class="hrz-pct" style="color:${c.c}">${pct}%</div>
-      <div class="hrz-bar" style="background:${c.c};width:${Math.min(pct,100)}%"></div>
-    </div>`;
-  }).join(''));
-}
-
-function setAnalyticsTab(el, period){
-  document.querySelectorAll('.a-tab').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active'); currentPeriod=period; loadAnalytics();
-}
-
-// ═══════════════════════════════════════════════
-// AI COACH CHAT
-// ═══════════════════════════════════════════════
-const SUGGESTIONS = [
-  "What's my ideal pace for easy runs?",
-  "How do I improve my VO2 max?",
-  "Should I run today or rest?",
-  "How to avoid injury during training?",
-  "Tips for half marathon preparation?"
-];
-let chatMessages = [];
-let isChatLoading = false;
-
-function initChat() {
-  const container = document.getElementById('chat-messages');
-  if(!container) return;
-  const chips = document.getElementById('suggestion-chips');
-  if(chips && !chips.innerHTML) {
-    chips.innerHTML = SUGGESTIONS.map(s =>
-      `<div class="suggestion-chip" onclick="sendSuggestion('${s}')">${s}</div>`
-    ).join('');
-  }
-  if(chatMessages.length === 0) {
-    appendChatBubble("ai", `Hi Alex! 👋 I'm your PACE AI Coach. I've analyzed your recent training data:\n\n📊 Fitness: 82 (+6 pts) · Fatigue: 54 (Moderate) · VO2 Max: 52\n\nAsk me anything about your training, recovery, or race preparation!`);
-  }
-}
-
-function appendChatBubble(role, text) {
-  const container = document.getElementById('chat-messages');
-  if(!container) return;
-  const now = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-  const div = document.createElement('div');
-  div.className = `chat-msg ${role}`;
-  div.innerHTML = `<div class="chat-bubble">${text.replace(/\n/g,'<br>')}</div><div class="chat-time">${now}</div>`;
-  container.appendChild(div);
-  chatMessages.push({role:role==='user'?'user':'assistant', content:text});
-  setTimeout(()=>{ container.scrollTop=container.scrollHeight; }, 50);
-}
-
-function showTyping() {
-  const container=document.getElementById('chat-messages');
-  if(!container) return;
-  const div=document.createElement('div');
-  div.className='chat-msg ai'; div.id='typing-indicator';
-  div.innerHTML=`<div class="chat-bubble" style="padding:12px 16px"><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;
-  container.appendChild(div);
-  container.scrollTop=container.scrollHeight;
-}
-
-function removeTyping() {
-  const t=document.getElementById('typing-indicator');
-  if(t) t.remove();
-}
-
-async function sendSuggestion(text) {
-  document.getElementById('chat-input').value = text;
-  sendChatMessage();
-}
-
-function handleChatKey(e) {
-  if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendChatMessage(); }
-}
-
-function autoResizeChat(el) {
-  el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,80)+'px';
-}
-
-async function sendChatMessage() {
-  if(isChatLoading) return;
-  const input=document.getElementById('chat-input');
-  const msg=input.value.trim();
-  if(!msg) return;
-  input.value=''; input.style.height='auto';
-  appendChatBubble('user', msg);
-  isChatLoading=true;
-  const btn=document.getElementById('chat-send-btn');
-  if(btn) btn.disabled=true;
-  showTyping();
-
-  const userStats = DB.user;
-  const recentActs = DB.activities.slice(0,3).map(a=>`${a.name}: ${a.distance_km}km in ${formatDur(a.duration_seconds)}`).join(', ');
-  const systemPrompt = `You are PACE, a premium AI running coach embedded in a running app. You are knowledgeable, encouraging, and specific with your advice.
-
-The user's current stats:
-- Name: ${userStats.name}
-- Fitness Score: ${userStats.fitness_score}/100
-- Fatigue Score: ${userStats.fatigue_score}/100  
-- VO2 Max: ${userStats.vo2_max} (Superior category)
-- Weekly goal: ${DB.weeklyProgress.goal_km} km, current: ${DB.weeklyProgress.total_km} km (${Math.round((DB.weeklyProgress.total_km/DB.weeklyProgress.goal_km)*100)}%)
-- Recent activities: ${recentActs}
-- Personal records: 5K: 21:08, 10K: 44:32, Half Marathon: 1:38:14, Marathon: 3:32:48
-
-Keep responses concise (2-4 sentences), warm, and actionable. Use emojis sparingly. Respond in the same language the user writes in.`;
-
-  try {
-    const response = await fetch(`${API_BASE}/ai-coach/chat`, {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({
-        message: msg,
-        user_id: "user_alex"
-      })
-    });
-    const data = await response.json();
-    removeTyping();
-    const reply = data.reply || "Sorry, I couldn't connect right now. Please try again!";
-    appendChatBubble('ai', reply);
-  } catch(e) {
-    removeTyping();
-    appendChatBubble('ai', "I'm having trouble connecting right now. Check your internet and try again! 🔄");
-  } finally {
-    isChatLoading=false;
-    if(btn) btn.disabled=false;
-  }
-}
-
-// ═══════════════════════════════════════════════
-// COMMUNITY
-// ═══════════════════════════════════════════════
-let currentCommTab = 'following';
-function loadCommunityFeed() {
-  let feed = [...DB.communityFeed];
-  if(currentCommTab==='you') feed=feed.filter(f=>f.user_id==='user_alex')||[];
-  if(currentCommTab==='clubs') feed=feed.slice(0,2);
-  if(!feed.length){ setHTML("feed-list",'<div class="empty-state">No activities yet 🏃</div>'); return; }
+let currentCommTab='following';
+function loadCommunityFeed(){
+  let feed=[...DB.communityFeed];
+  if(currentCommTab==='you')feed=feed.filter(f=>f.user_id==='user_alex')||[];
+  if(currentCommTab==='clubs')feed=feed.slice(0,2);
+  if(!feed.length){setHTML("feed-list",'<div class="empty-state">No activities yet 🏃</div>');return;}
   const grads=['linear-gradient(135deg,#EC4899,#BE185D)','linear-gradient(135deg,#3B82F6,#1D4ED8)','linear-gradient(135deg,#10B981,#047857)','linear-gradient(135deg,#F59E0B,#D97706)'];
-  setHTML("feed-list", feed.map((item,idx)=>{
+  setHTML("feed-list",feed.map((item,idx)=>{
     const initials=(item.user_name||"Runner").split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
-    const dur=formatDur(item.duration_seconds||0);
-    const pace=formatPace(item.avg_pace_sec_per_km||0);
-    const liked=item.liked_by_me;
-    const dateStr=item.posted_at?new Date(item.posted_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'}):"Today";
-    return `<div class="feed-item">
-      <div class="feed-header">
-        <div class="feed-avatar" style="background:${grads[idx%grads.length]}">${initials}</div>
-        <div class="feed-user"><div class="feed-name">${item.user_name}</div><div class="feed-time">${dateStr} · ${item.location}</div></div>
-      </div>
-      <div class="feed-title">${item.title}</div>
-      <div class="feed-stats-row">
-        <div class="feed-stat"><div class="feed-stat-val">${item.distance_km.toFixed(1)}</div><div class="feed-stat-lbl">km</div></div>
-        <div class="feed-stat"><div class="feed-stat-val">${dur}</div><div class="feed-stat-lbl">time</div></div>
-        <div class="feed-stat"><div class="feed-stat-val">${pace}</div><div class="feed-stat-lbl">avg pace</div></div>
-      </div>
-      <div class="feed-actions">
-        <div class="feed-action ${liked?'liked':''}" id="like-${item.id}" onclick="toggleLike('${item.id}')">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="${liked?'#EF4444':'none'}" stroke="${liked?'#EF4444':'currentColor'}" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-          <span class="feed-action-count" id="likes-${item.id}">${item.likes}</span>
-        </div>
-        <div class="feed-action" onclick="showToast('Comments coming soon 💬')">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          <span class="feed-action-count">${item.comments}</span>
-        </div>
-        <div class="feed-action" onclick="shareActivity('${item.id}')">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-          <span class="feed-action-count">Share</span>
-        </div>
-      </div>
-    </div>`;
+    const dur=formatDur(item.duration_seconds||0);const pace=formatPace(item.avg_pace_sec_per_km||0);
+    const liked=item.liked_by_me;const dateStr=item.posted_at?new Date(item.posted_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'}):"Today";
+    return`<div class="feed-item"><div class="feed-header"><div class="feed-avatar" style="background:${grads[idx%grads.length]}">${initials}</div><div class="feed-user"><div class="feed-name">${item.user_name}</div><div class="feed-time">${dateStr} · ${item.location}</div></div></div><div class="feed-title">${item.title}</div><div class="feed-stats-row"><div class="feed-stat"><div class="feed-stat-val">${item.distance_km.toFixed(1)}</div><div class="feed-stat-lbl">km</div></div><div class="feed-stat"><div class="feed-stat-val">${dur}</div><div class="feed-stat-lbl">time</div></div><div class="feed-stat"><div class="feed-stat-val">${pace}</div><div class="feed-stat-lbl">avg pace</div></div></div><div class="feed-actions"><div class="feed-action ${liked?'liked':''}" id="like-${item.id}" onclick="toggleLike('${item.id}')"><svg width="18" height="18" viewBox="0 0 24 24" fill="${liked?'#EF4444':'none'}" stroke="${liked?'#EF4444':'currentColor'}" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg><span class="feed-action-count" id="likes-${item.id}">${item.likes}</span></div><div class="feed-action" onclick="showToast('Comments coming soon 💬')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="feed-action-count">${item.comments}</span></div><div class="feed-action" onclick="shareActivity('${item.id}')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span class="feed-action-count">Share</span></div></div></div>`;
   }).join(''));
 }
-
-function toggleLike(feedId) {
-  const item = DB.communityFeed.find(f=>f.id===feedId);
-  if(!item) return;
-  item.liked_by_me=!item.liked_by_me;
-  item.likes+=item.liked_by_me?1:-1;
-  const el=document.getElementById(`like-${feedId}`);
-  const countEl=document.getElementById(`likes-${feedId}`);
-  if(el&&countEl){
-    el.classList.toggle('liked',item.liked_by_me);
-    countEl.textContent=item.likes;
-    const svg=el.querySelector('svg');
-    if(svg){ svg.setAttribute('fill',item.liked_by_me?'#EF4444':'none'); svg.setAttribute('stroke',item.liked_by_me?'#EF4444':'currentColor'); }
-  }
+function toggleLike(feedId){
+  const item=DB.communityFeed.find(f=>f.id===feedId);if(!item)return;
+  item.liked_by_me=!item.liked_by_me;item.likes+=item.liked_by_me?1:-1;
+  const el=document.getElementById(`like-${feedId}`);const countEl=document.getElementById(`likes-${feedId}`);
+  if(el&&countEl){el.classList.toggle('liked',item.liked_by_me);countEl.textContent=item.likes;const svg=el.querySelector('svg');if(svg){svg.setAttribute('fill',item.liked_by_me?'#EF4444':'none');svg.setAttribute('stroke',item.liked_by_me?'#EF4444':'currentColor');}}
 }
+function shareActivity(id){showToast("Copied link to clipboard 🔗");}
+function setCommTab(el,tab){document.querySelectorAll('.c-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');currentCommTab=tab;loadCommunityFeed();}
 
-function shareActivity(id) { showToast("Copied link to clipboard 🔗"); }
-
-function setCommTab(el,tab){
-  document.querySelectorAll('.c-tab').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active'); currentCommTab=tab; loadCommunityFeed();
-}
-
-// ═══════════════════════════════════════════════
-// PROFILE
-// ═══════════════════════════════════════════════
-function loadProfile() {
-  const u = DB.user;
-  const ini=u.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
-  setText("profile-name", u.name);
-  setText("profile-loc", u.location);
-  setText("profile-avatar", ini);
-  setText("home-avatar", ini);
-  setText("home-username", u.name.split(' ')[0]);
-  setText("prof-activities", u.total_activities);
-  setText("prof-followers", u.followers);
-  setText("prof-following", u.following);
-  const totalKmThisYear = DB.activities.reduce((sum,a)=>sum+a.distance_km,0) + 800;
-  setText("year-dist", totalKmThisYear.toFixed(0));
+function loadProfile(){
+  const u=DB.user;const ini=u.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+  setText("profile-name",u.name);setText("profile-loc",u.location);setText("profile-avatar",ini);
+  setText("home-avatar",ini);setText("home-username",u.name.split(' ')[0]);
+  setText("prof-activities",u.total_activities);setText("prof-followers",u.followers);setText("prof-following",u.following);
+  const totalKmThisYear=DB.activities.reduce((sum,a)=>sum+a.distance_km,0)+800;setText("year-dist",totalKmThisYear.toFixed(0));
   const trophies=['🏆','🥇','🥈','🥉','🎖️'];
-  setHTML("pr-list", DB.personalRecords.map((pr,i)=>`
-    <div class="pr-item">
-      <div class="pr-dist">${pr.distance_label}</div>
-      <div class="pr-time">${pr.time}</div>
-      <div class="pr-date">${pr.date}</div>
-      <div class="pr-trophy">${trophies[i]||'🎖️'}</div>
-    </div>`).join(''));
-  setHTML("badges-list", DB.badges.map(b=>`
-    <div class="badge-item"><div class="badge-icon">${b.icon}</div><div class="badge-name">${b.name}</div></div>`).join(''));
+  setHTML("pr-list",DB.personalRecords.map((pr,i)=>`<div class="pr-item"><div class="pr-dist">${pr.distance_label}</div><div class="pr-time">${pr.time}</div><div class="pr-date">${pr.date}</div><div class="pr-trophy">${trophies[i]||'🎖️'}</div></div>`).join(''));
+  setHTML("badges-list",DB.badges.map(b=>`<div class="badge-item"><div class="badge-icon">${b.icon}</div><div class="badge-name">${b.name}</div></div>`).join(''));
+}
+function loadDevices(){
+  setHTML("devices-list",DB.devices.map(d=>`<div class="device-row"><div class="device-logo" style="background:#f0f0f0">${d.icon}</div><div class="device-name">${d.name}</div><div class="device-status" style="color:${d.connected?'var(--green)':'var(--text-tertiary)'};background:${d.connected?'var(--green-pale)':'var(--surface-2)'}" onclick="toggleDevice('${d.id}')">${d.connected?'Connected':'Connect'}</div></div>`).join(''));
+}
+function toggleDevice(deviceId){
+  const d=DB.devices.find(x=>x.id===deviceId);if(!d)return;
+  d.connected=!d.connected;showToast(d.connected?`${d.name} connected ✓`:`${d.name} disconnected`,d.connected?"success":"");loadDevices();
 }
 
-// ═══════════════════════════════════════════════
-// SETTINGS / DEVICES
-// ═══════════════════════════════════════════════
-function loadDevices() {
-  setHTML("devices-list", DB.devices.map(d=>`
-    <div class="device-row">
-      <div class="device-logo" style="background:#f0f0f0">${d.icon}</div>
-      <div class="device-name">${d.name}</div>
-      <div class="device-status" style="color:${d.connected?'var(--green)':'var(--text-tertiary)'};background:${d.connected?'var(--green-pale)':'var(--surface-2)'}" onclick="toggleDevice('${d.id}')">${d.connected?'Connected':'Connect'}</div>
-    </div>`).join(''));
-}
+function updateClock(){const now=new Date();setText("clock",`${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`);}
 
-function toggleDevice(deviceId) {
-  const d=DB.devices.find(x=>x.id===deviceId);
-  if(!d) return;
-  d.connected=!d.connected;
-  showToast(d.connected?`${d.name} connected ✓`:`${d.name} disconnected`, d.connected?"success":"");
-  loadDevices();
-}
-
-// ═══════════════════════════════════════════════
-// CLOCK
-// ═══════════════════════════════════════════════
-function updateClock(){
-  const now=new Date();
-  setText("clock",`${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`);
-}
-updateClock(); setInterval(updateClock, 10000);
-
-// ═══════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════
-document.addEventListener('DOMContentLoaded', () => {
-  loadHomeScreen();
-  loadAnalytics();
-  loadProfile();
-  loadCommunityFeed();
-  loadDevices();
-  setTimeout(()=>{
-    const ov=document.getElementById("loading-overlay");
-    if(ov){ ov.classList.add("hidden"); setTimeout(()=>ov.remove(),500); }
-  }, 800);
+document.addEventListener('DOMContentLoaded',()=>{
+  loadHomeScreen();loadAnalytics();loadProfile();loadCommunityFeed();loadDevices();
+  setTimeout(()=>{const ov=document.getElementById("loading-overlay");if(ov){ov.classList.add("hidden");setTimeout(()=>ov.remove(),500);}},800);
 });
 </script>
 </body>
